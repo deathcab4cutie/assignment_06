@@ -5,3 +5,25 @@ terminology from this assignment (REST API, endpoint, HTTP status code,
 raise_for_status, API key, form data vs. JSON body, rate limit, caching,
 json_normalize, record_path, meta, grain, opinion mining, named-entity
 recognition, prompt, system prompt, reasoning model), and make it actionable.
+
+In this assignment I got to practice and get familiar with putting the web
+address together from a base URL plus a path like /api/azure/sentiment,
+which got me to the endpoint. I had my API key in the .env file, which was
+called throughout the code. I learned how to use raise_for_status to turn
+a bad HTTP status code into an error right away, which protected the flow
+of the program.
+
+I struggled a bit with the JSON levels in opinions_table. The format
+confused me, since it went from documents to sentences to targets. The
+target did not hold its words; instead, it pointed to them with a ref. I had
+to pull the number out with .split("/")[-1]. I still find it hard to picture
+deeply nested JSON in my head. Next time I will print one document, or open
+the JSON file and trace the path by hand before writing the loops.
+
+I also learned that pandas does the counting and the language model only
+writes the answer, because language models are bad at counting but good at
+writing sentences, which is interesting. I also realized that the page shows
+the review sentences the answer came from under the answer, so the owner can
+check that the answer is true. Also, if no reviews mention the item, the page
+shows a warning instead of asking the model, because the model has no evidence
+to answer from and might make something up.
