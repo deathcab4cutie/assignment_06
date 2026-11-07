@@ -216,5 +216,35 @@ def subjects_step(reviews: pd.DataFrame, mentions: pd.DataFrame,
     cache when the request is exactly the same, so the same reviews must
     produce the same list every time.
     """
-    # TODO: your code here
-    pass
+    # read the cache with no API calls
+    if os.path.exists(cache_file):
+        return pd.read_csv(cache_file)
+
+    rows = []
+    for review in reviews.to_dict("records"):
+        these = mentions[mentions["review_id"] == review["review_id"]]
+        if these.empty:
+            continue
+
+        # in offset order, no repeats
+        names = (these.sort_values("mention_offset")["mention"]
+                 .drop_duplicates().tolist())
+
+        # one API call per review, asking about all its mentions at once
+        response = classify_mentions(review["text"], names)
+
+        # one row per mention, from the answer for that mention
+        for name in names:
+            answer = response["answers"][name]
+            rows.append({
+                "review_id": review["review_id"],
+                "mention": name,
+                "subject": answer["choice"],
+                "subject_confidence": answer["confidence"],
+            })
+
+    # save so the next run reads the file instead
+    df = pd.DataFrame(rows, columns=["review_id", "mention",
+                                     "subject", "subject_confidence"])
+    df.to_csv(cache_file, index=False)
+    return df
